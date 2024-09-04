@@ -1,16 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, forwardRef, Inject } from '@nestjs/common';
 import { UsersService } from 'src/users/providers/users.service';
 
 @Injectable()
 export class AuthService {
+  // injecting usersService
 
-    // injecting usersService
-    constructor(private readonly usersService:UsersService,){
-
-    }
-    public login(email:string, id:number, password:string){
-        // check whether the user is logged in or not
-        // once user is logged in, return a token
-
-    }
+  constructor(
+    @Inject(forwardRef(() => UsersService))
+    private readonly usersService: UsersService,
+  ) {}
+  public login(email: string, id: string, password: string) {
+    const user = this.usersService.findOneById('120');
+    return 'Sample';
+  }
+  public isAuth() {
+    return true;
+  }
 }

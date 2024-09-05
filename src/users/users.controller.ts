@@ -25,11 +25,11 @@ export class UsersController {
 
   @Get('/:id?')
   @ApiOperation({
-    summary:"Fetches a list of registered users on the Application"
+    summary: 'Fetches a list of registered users on the Application',
   })
   @ApiResponse({
-    status:200,
-    description:"Users fetched successfully based on the query"
+    status: 200,
+    description: 'Users fetched successfully based on the query',
   })
   @ApiQuery({
     name: 'limit',
@@ -39,11 +39,11 @@ export class UsersController {
     example: 10,
   })
   @ApiQuery({
-    name:'page',
-    type:"number",
-    required:false,
-    description:"The position of the page that you want the API to return",
-    example:1
+    name: 'page',
+    type: 'number',
+    required: false,
+    description: 'The position of the page that you want the API to return',
+    example: 1,
   })
   public getUsers(
     @Param() getUserParamDto: GetUsersParamDto,
@@ -55,9 +55,9 @@ export class UsersController {
 
   @Post()
   public createUsers(@Body() createUserDto: CreateUserDto) {
-    console.log(createUserDto);
+  
 
-    return 'You sent this post request';
+    return this.usersService.createUser(createUserDto);
   }
 
   @Delete()

@@ -8,18 +8,20 @@ import {
   IsString,
   IsUrl,
   Matches,
+  MaxLength,
   MinLength,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { postStatus } from '../enums/postStatus.enum';
 import { postType } from '../enums/postType.enum';
-import { CreateMetaOptionsDto } from './create-meta-Options.dtos';
+import { CreateMetaOptionsDto } from '../../meta-options/dtos/create-post-meta-options.dtos';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 export class CreatePostDto {
   @ApiProperty()
   @IsString()
   @MinLength(4)
+  @MaxLength(512)
   @IsNotEmpty()
   title: string;
 
@@ -31,6 +33,7 @@ export class CreatePostDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
+  @MaxLength(256)
   @Matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
     message: 'A slug should be all small letters and use hyphens',
   })
@@ -63,6 +66,7 @@ export class CreatePostDto {
   })
   @IsOptional()
   @IsUrl()
+  @MaxLength(1024)
   featuredImageUrl?: string;
 
   @ApiPropertyOptional({
@@ -82,28 +86,21 @@ export class CreatePostDto {
   tags?: string[];
 
   @ApiPropertyOptional({
-    type: 'array',
+    type: 'object',
     required: false,
     items: {
       type: 'object',
       properties: {
-        key: {
+        metavalue: {
           type: 'string',
-          description:
-            'The Key can be any string identifier for your meta option',
-          example: 'sidebarEnabled',
-        },
-        value: {
-          type: 'any',
-          description: 'Any value you want to pass to the key',
-          example: 'sidebarEnabled',
+          description: 'The meta vlue is a JSon String',
+          example: '{"sidebarEnabled : true"}',
         },
       },
     },
   })
   @IsOptional()
-  @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateMetaOptionsDto)
-  metaOptions?: CreateMetaOptionsDto[];
+  metaOptions?: CreateMetaOptionsDto | null;
 }

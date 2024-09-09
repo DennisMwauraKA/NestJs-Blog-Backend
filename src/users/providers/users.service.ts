@@ -1,4 +1,4 @@
-import { Injectable, forwardRef, Inject } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { GetUsersParamDto } from '../dtos/get-users-params.dto';
 import { User } from '../user.entity';
 import { Repository } from 'typeorm';
@@ -12,17 +12,19 @@ export class UsersService {
 
   constructor(
     @InjectRepository(User)
-    private usersRepository: Repository<User>,
+    private userRepository: Repository<User>,
   ) {}
-
+  /**Method to create a user and save to the database */
   public async createUser(createUserDto: CreateUserDto) {
-    const existingUser = await this.usersRepository.findOne({
+    const existingUser = this.userRepository.findOne({
       where: { email: createUserDto.email },
     });
-    let newUser = this.usersRepository.create(createUserDto);
-    newUser = await this.usersRepository.save(newUser);
-    return newUser;
+
+    // create user if there is no existing user in database
+    let newUser = this.userRepository.create(createUserDto);
+    newUser = await this.userRepository.save(newUser);
   }
+
   /**The method to get all the users from the database */
   public findAll(
     getUserParamDto: GetUsersParamDto,

@@ -9,10 +9,7 @@ export class AuthService {
     @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
   ) {}
-  public login(email: string, id: string, password: string) {
-    const user = this.usersService.findOneById('120');
-    return 'Sample';
-  }
+
   public isAuth() {
     return true;
   }

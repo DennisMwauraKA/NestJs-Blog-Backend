@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Post } from '../post.entity';
 import { Repository } from 'typeorm';
 import { MetaOption } from 'src/meta-options/meta-options.entity';
+import { TagsService } from 'src/tags/providers/tags.service';
 
 @Injectable()
 export class PostsService {
@@ -17,41 +18,45 @@ export class PostsService {
     private readonly postsRepository: Repository<Post>,
 
     @InjectRepository(MetaOption)
-    public readonly metaOptionsRepository: Repository<MetaOption>,
+    private readonly metaOptionsRepository: Repository<MetaOption>,
+
+    private readonly tagsService: TagsService,
   ) {}
 
   /**creating post methods */
 
   public async create(@Body() createPostDto: CreatePostDto) {
+    //find author from the database by authorid
+    let author = await this.usersService.findOneById(createPostDto.authorId);
+
+    // find tags
+
+    let tags = await this.tagsService.findMutipleTags(createPostDto.tags);
     // create post
 
-    let post = this.postsRepository.create(createPostDto);
+    let post = this.postsRepository.create({
+      ...createPostDto,
+      author: author,
+      tags: tags,
+    });
 
     return await this.postsRepository.save(post);
   }
   public async findAll(userId: string) {
-    const user = this.usersService.findOneById(userId);
-    let posts = this.postsRepository.find({});
+    let posts = this.postsRepository.find({
+      relations: {
+        metaOptions: true,
+        //tags:true
+      },
+    });
     return posts;
   }
 
-  // deleting a post
+  /**Method to delete a post */
   public async delete(id: number) {
-    //find if  post exists with that id
-
-    let post = await this.postsRepository.findOneBy({ id });
     // deleting the post
-    //await this.postsRepository.delete(id);
-    // delete metaOptions
-    // await this.metaOptionsRepository.delete(post.metaOptions.id);
-    let inversePost = await this.metaOptionsRepository.find({
-      where: { id: post.metaOptions.id },
-      relations: {
-        post: true,
-      },
-    });
+    await this.postsRepository.delete(id);
 
-    console.log(inversePost)
     return { deleted: true, id };
   }
 }

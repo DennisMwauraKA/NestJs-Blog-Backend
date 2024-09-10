@@ -10,7 +10,7 @@ import {
   MinLength,
 } from 'class-validator';
 
-export class Tag {
+export class CreateTagDto {
   @ApiProperty()
   @IsString()
   @MinLength(3)

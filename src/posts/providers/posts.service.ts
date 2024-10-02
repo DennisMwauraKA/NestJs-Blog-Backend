@@ -12,7 +12,11 @@ import { Repository } from 'typeorm';
 import { MetaOption } from 'src/meta-options/meta-options.entity';
 import { TagsService } from 'src/tags/providers/tags.service';
 import { PatchPostDto } from '../dtos/patch-post.dto';
-import { retry } from 'rxjs';
+import { GetPostsDto } from '../dtos/get-posts.dto';
+import { PaginationProvider } from 'src/common/pagination/providers/pagination.provider';
+import { Paginated } from 'src/common/pagination/interfaces/paginated.interface';
+import { CreatePostProvider } from './create-post.provider';
+import { ActiveUserData } from 'src/auth/interfaces/active-user.interface';
 
 @Injectable()
 export class PostsService {
@@ -28,41 +32,28 @@ export class PostsService {
     private readonly metaOptionsRepository: Repository<MetaOption>,
 
     private readonly tagsService: TagsService,
+
+    private readonly paginationProvider: PaginationProvider,
+
+    private readonly createPostProvider: CreatePostProvider,
   ) {}
 
   /**creating post methods */
 
-  public async create(@Body() createPostDto: CreatePostDto) {
-    //find author from the database by authorid
-    let author = undefined;
-    try {
-      author = await this.usersService.findOneById(createPostDto.authorId);
-    } catch (error) {
-      throw new RequestTimeoutException(
-        'Error could not connnect to the database',
-      );
-    }
-
-    // find tags
-
-    let tags = await this.tagsService.findMutipleTags(createPostDto.tags);
-    // create post
-
-    let post = this.postsRepository.create({
-      ...createPostDto,
-      author: author,
-      tags: tags,
-    });
-
-    return await this.postsRepository.save(post);
+  public async create(createPostDto: CreatePostDto, user: ActiveUserData) {
+    return await this.createPostProvider.create(createPostDto, user);
   }
-  public async findAll(userId: string) {
-    let posts = this.postsRepository.find({
-      relations: {
-        metaOptions: true,
-        //tags:true
+  public async findAll(
+    postQuery: GetPostsDto,
+    userId: string,
+  ): Promise<Paginated<Post>> {
+    let posts = await this.paginationProvider.paginateQuery(
+      {
+        limit: postQuery.limit,
+        page: postQuery.page,
       },
-    });
+      this.postsRepository,
+    );
     return posts;
   }
 

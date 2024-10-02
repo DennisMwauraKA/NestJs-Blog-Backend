@@ -8,12 +8,16 @@ import {
 } from '@nestjs/common';
 import { GetUsersParamDto } from '../dtos/get-users-params.dto';
 import { User } from '../user.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from '../dtos/create-user.dto';
 import { ConfigType } from '@nestjs/config';
 import profileConfig from '../config/profile.config';
-import { error } from 'console';
+import { UsersCreateManyProvider } from './users-create-many.provider';
+import { CreateManyUsersDto } from '../dtos/create-many-users.dto';
+import { CreateUserProvider } from './create-user.provider';
+import { FindUserByEmailProvider } from './find-user-by-email.provider';
+
 @Injectable()
 /** class to connect users table and perform business operation*/
 export class UsersService {
@@ -24,45 +28,23 @@ export class UsersService {
     private userRepository: Repository<User>,
     @Inject(profileConfig.KEY)
     private readonly profileConfiguration: ConfigType<typeof profileConfig>,
+    /**inject datasource */
+    private readonly dataSource: DataSource,
+
+    /**inject userCreatemanyprovider */
+
+    private readonly usersCreateManyPorvider: UsersCreateManyProvider,
+
+    /**inject create user provider */
+
+    private readonly createUserProvider: CreateUserProvider,
+
+    /**Inject findOnebyemail */
+
+    private readonly findUserByEmail: FindUserByEmailProvider,
   ) {}
 
   /**Method to create a user and save to the database */
-  public async createUser(createUserDto: CreateUserDto) {
-    let existingUser = undefined;
-    try {
-      existingUser = await this.userRepository.findOne({
-        where: { email: createUserDto.email },
-      });
-    } catch (error) {
-      throw new RequestTimeoutException(
-        'Unable to process your request please try again',
-        {
-          description: 'Error connecting to the Database',
-        },
-      );
-    }
-
-    if (existingUser) {
-      throw new BadRequestException(
-        'The user already exists,please check your email',
-      );
-    }
-
-    // create user if there is no existing user in database
-    let newUser = this.userRepository.create(createUserDto);
-
-    try {
-      newUser = await this.userRepository.save(newUser);
-    } catch (error) {
-      throw new RequestTimeoutException(
-        'this action could not be completed please try again later',
-        {
-          description: 'Error connecting to the DataBase',
-        },
-      );
-    }
-    return newUser;
-  }
 
   /**The method to get all the users from the database */
   public findAll(
@@ -99,5 +81,20 @@ export class UsersService {
     }
 
     return user;
+  }
+
+  /**Method for inserting many users using transactions */
+  public async createMany(createManyUsersDto: CreateManyUsersDto) {
+    return await this.usersCreateManyPorvider.createMany(createManyUsersDto);
+  }
+
+  /**Method for creating a user */
+
+  public async createUser(createUserDto: CreateUserDto) {
+    return this.createUserProvider.createUser(createUserDto);
+  }
+
+  public async findOneByEmail(email: string) {
+    return this.findUserByEmail.findOneByEmail(email);
   }
 }

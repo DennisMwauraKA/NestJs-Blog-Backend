@@ -13,6 +13,9 @@ import { PostsService } from './providers/posts.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreatePostDto } from './dtos/create-post.dtos';
 import { PatchPostDto } from './dtos/patch-post.dto';
+import { GetPostsDto } from './dtos/get-posts.dto';
+import { ActiveUser } from 'src/auth/decorators/active-user-data.decorator';
+import { ActiveUserData } from 'src/auth/interfaces/active-user.interface';
 @Controller('posts')
 @ApiTags('Posts')
 export class PostsController {
@@ -22,8 +25,11 @@ export class PostsController {
   ) {}
 
   @Get('/:userId?')
-  public getPosts(@Param('userId') userId: string) {
-    return this.postService.findAll(userId);
+  public getPosts(
+    @Param('userId') userId: string,
+    @Query() postQuery: GetPostsDto,
+  ) {
+    return this.postService.findAll(postQuery, userId);
   }
   @ApiOperation({
     summary: 'Creates a new Blog Post',
@@ -33,8 +39,11 @@ export class PostsController {
     description: 'You get a 201 response if your post is created',
   })
   @Post()
-  public createPost(@Body() createPostDto: CreatePostDto) {
-    return this.postService.create(createPostDto);
+  public createPost(
+    @Body() createPostDto: CreatePostDto,
+    @ActiveUser() user: ActiveUserData,
+  ) {
+    return this.postService.create(createPostDto,user)
   }
 
   @ApiOperation({

@@ -9,6 +9,10 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
+      transformOptions: {
+        // takes care of the implicit conversion
+        enableImplicitConversion: true,
+      },
     }),
   );
   /**Swagger configuration */

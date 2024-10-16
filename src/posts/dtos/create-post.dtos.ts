@@ -103,5 +103,4 @@ export class CreatePostDto {
   @ValidateNested({ each: true })
   @Type(() => CreateMetaOptionsDto)
   metaOptions?: CreateMetaOptionsDto | null;
-
 }

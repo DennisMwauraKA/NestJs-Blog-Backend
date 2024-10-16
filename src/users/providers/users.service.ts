@@ -17,6 +17,9 @@ import { UsersCreateManyProvider } from './users-create-many.provider';
 import { CreateManyUsersDto } from '../dtos/create-many-users.dto';
 import { CreateUserProvider } from './create-user.provider';
 import { FindUserByEmailProvider } from './find-user-by-email.provider';
+import { FindOneByGoogleIdProvider } from './find-one-by-google-id.provider';
+import { CreateGoogleUserProvider } from './create-google-user.provider';
+import { GoogleUser } from '../interfaces/google-user.interface';
 
 @Injectable()
 /** class to connect users table and perform business operation*/
@@ -26,8 +29,7 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-    @Inject(profileConfig.KEY)
-    private readonly profileConfiguration: ConfigType<typeof profileConfig>,
+
     /**inject datasource */
     private readonly dataSource: DataSource,
 
@@ -42,6 +44,14 @@ export class UsersService {
     /**Inject findOnebyemail */
 
     private readonly findUserByEmail: FindUserByEmailProvider,
+
+    /**inject find one by googleId Provider */
+
+    private readonly findOneByGoogleIDProvider: FindOneByGoogleIdProvider,
+
+    /**inject createGoogleUserProvider */
+
+    private readonly createGoogleuserProvider: CreateGoogleUserProvider,
   ) {}
 
   /**Method to create a user and save to the database */
@@ -96,5 +106,13 @@ export class UsersService {
 
   public async findOneByEmail(email: string) {
     return this.findUserByEmail.findOneByEmail(email);
+  }
+
+  public async findOneByGoogleId(googleId: string) {
+    return this.findOneByGoogleIDProvider.findOneByGoogleId(googleId);
+  }
+
+  public async createGoogleUser(googleUser: GoogleUser) {
+    return this.createGoogleuserProvider.createGoogleUser(googleUser);
   }
 }

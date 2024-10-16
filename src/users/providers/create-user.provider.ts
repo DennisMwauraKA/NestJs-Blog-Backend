@@ -10,13 +10,20 @@ import { Repository } from 'typeorm';
 import { User } from '../user.entity';
 import { HashingProvider } from 'src/auth/providers/hashing.provider';
 import { InjectRepository } from '@nestjs/typeorm';
+
+import { MailService } from 'src/mail/providers/mail.service';
 @Injectable()
 export class CreateUserProvider {
+  static createUser(createUser: any) {
+      throw new Error('Method not implemented.');
+  }
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @Inject(forwardRef(() => HashingProvider))
     private readonly hashingProvider: HashingProvider,
+
+    private readonly mailService: MailService,
   ) {}
   public async createUser(createUserDto: CreateUserDto) {
     let existingUser = undefined;
@@ -56,6 +63,13 @@ export class CreateUserProvider {
           description: 'Error connecting to the DataBase',
         },
       );
+    }
+
+    try {
+      await this.mailService.sendUserWelcome(newUser);
+    } catch (error) {
+
+      throw new RequestTimeoutException(error)
     }
     return newUser;
   }
